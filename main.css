@@ -1,14 +1,17 @@
 #canvasDiv {
 	float: left;
-	border: 1px dotted gray;
 }
 
 #inputArea {
-	border: 1px solid black;
 	margin-left: 120px;
 }
 
 #text {
+	background-color: #EEE;
 	width: 100%;
 	height: 30em;
+}
+
+#random {
+	font-size: 6px;
 }
