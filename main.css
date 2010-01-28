@@ -3,7 +3,7 @@
 }
 
 #inputArea {
-	margin-left: 120px;
+	margin-left: 220px;
 }
 
 #text {
@@ -14,4 +14,13 @@
 
 #random {
 	font-size: 6px;
+}
+
+#view {
+	width: 200px;
+	height: 100%;
+}
+
+.clear {
+	clear: both;
 }
