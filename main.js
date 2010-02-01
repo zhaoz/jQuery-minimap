@@ -1,29 +1,6 @@
 var canvas = $("#view");
 
 (function ($) {
-/**
- * Detect minimal font size
- */
-$.minFontSize = function (tSize) {
-	var size = tSize || 1,
-		actual,
-		span = $("<span>&nbsp;</span>").css({
-				'font-family': 'monospace',
-				display: 'block',
-				padding: '0px',
-				margin: '0px',
-				position: 'absolute',
-				'z-index': '-100',
-				left: '-999px'
-			});
-	$("body").append(span);
-
-	span.css('font-size', size + 'px');
-	actual = span.innerHeight();
-	span.remove();
-	return actual;
-};
-
 // load jquery into textarea
 $.ajax({
 	url: $('script[rel="jquery"]').attr('src'),
