@@ -12,7 +12,7 @@ function createCanvas(cvdiv) {
 
 $.minimap = function () { this.init.apply(this, arguments); };
 $.minimap.defaults = {
-	'fontSize': 4
+	fontSize: 4
 };
 
 $.minimap.prototype = {
