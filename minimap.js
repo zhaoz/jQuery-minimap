@@ -25,7 +25,7 @@ $.minimap.prototype = {
 
 		var self = this;
 		this.keyUpHandler = function () {
-			self.refreshZoom();
+			self.redraw();
 		};
 		textArea.live('keyup', this.keyUpHandler);
 
@@ -87,7 +87,9 @@ $.minimap.prototype = {
 $.fn.minimap = function (options) {
 
 	$(this).each(function () {
-		$(this).data('minimap', new $.minimap($(this), $('#text'),  options));
+		var inst = new $.minimap($(this), $('#text'),  options);
+		$(this).data('minimap', inst);
+		$(this).bind('redraw', $.proxy(inst.redraw, inst));
 	});
 };
 

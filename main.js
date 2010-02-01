@@ -4,7 +4,7 @@ $.ajax({
 	url: $('script[rel="jquery"]').attr('src'),
 	success: function (data) {
 		$('#text').val(data);
-		refreshZoom();
+		$('#canvasDiv').trigger('redraw');
 	}
 });
 
