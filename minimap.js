@@ -118,6 +118,10 @@ $.minimap.prototype = {
 			line = this.lines[ii];
 			this.ctx.fillText(line, 0, off);
 			off += fontSize;
+
+			if (off > this.height) {
+				break;			// no need to draw stuff out of boundary
+			}
 		}
 
 		this.ctx.restore();
