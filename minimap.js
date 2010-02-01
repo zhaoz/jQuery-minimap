@@ -1,20 +1,20 @@
 (function ($) {
 
-$.minFontSize = function (tSize) {
+$.detectFontSize = function (tSize, options) {
 	var size = tSize || 1,
 		actual,
-		span = $("<span>&nbsp;</span>").css({
+		span = $("<span>&nbsp;</span>").css($.extend({
 				'font-family': 'monospace',
 				display: 'block',
 				padding: '0px',
 				margin: '0px',
 				position: 'absolute',
 				'z-index': '-100',
+				'font-size': tSize + "px",
 				left: '-999px'
-			});
+			}, options));
 	$("body").append(span);
 
-	span.css('font-size', size + 'px');
 	actual = span.innerHeight();
 	span.remove();
 	return actual;
@@ -41,6 +41,10 @@ $.minimap.prototype = {
 
 		this.container = container;
 		this.text = textArea;
+
+		// detect what actual font pixels are in textArea
+		this.onelinepx = $.detectFontSize(
+				parseInt(this.text.css('font-size'), 10));
 
 		this.canvas = createCanvas(container);
 		this.ctx = this.canvas.get(0).getContext("2d");
@@ -104,17 +108,35 @@ $.minimap.prototype = {
 		this.ctx.restore();
 	},
 
-	drawBox: function drawBox() {
-		// figure out where we are
-		var top = this.text.scrollTop();
-		console.log("offset from top: " + top);
+	curLine: function curLines() {
+		return this.text.scrollTop() / this.onelinepx;
+	},
+
+	numLinesShown: function numLinesShown() {
+		return this.text.innerHeight() / this.onelinepx;
+	},
+
+	drawBox: function drawBox(top, bottom) {
+		this.ctx.save();
+
+		this.ctx.strokeStyle = "rgb(200,200,200)";
+		this.ctx.lineWidth = 2;
+		this.ctx.fillStyle = "white";
+		this.ctx.strokeRect(0, top, this.width, bottom);
+
+		this.ctx.restore();
 	},
 
 	redraw: function () {
+		var top = this.curLine() * this.settings.fontSize,
+			bottom = this.numLinesShown() * this.settings.fontSize;
+
 		console.time("redrawing");
+
 		this.clear();
 		this.drawText();
-		this.drawBox();
+		this.drawBox(top, bottom);
+
 		console.timeEnd("redrawing");
 	}
 };
