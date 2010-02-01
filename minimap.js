@@ -152,7 +152,9 @@ $.minimap.prototype = {
 			affectedBottom,
 			isScroll = eve.type === "scroll";
 
-		console.time("redrawing");
+		if (this.settings.debug) {
+			console.time("redrawing");
+		}
 
 		if (isScroll) {
 			affectedTop = Math.min(topLine, this.oldTopLine);
@@ -168,7 +170,9 @@ $.minimap.prototype = {
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
 
-		console.timeEnd("redrawing");
+		if (this.settings.debug) {
+			console.timeEnd("redrawing");
+		}
 	}
 };
 
