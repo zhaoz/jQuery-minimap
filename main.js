@@ -1,5 +1,6 @@
-(function ($) {
+var MINFONTSIZE = false;
 
+(function ($) {
 /**
  * Detect minimal font size
  */
@@ -32,28 +33,36 @@ $.ajax({
 	}
 });
 
-var canvas = $("#view");
-var ctx = canvas.get(0).getContext("2d");
+}(jQuery));
 
-var area = $('#text');
+var canvas = $("#view"),
+	ctx = canvas.get(0).getContext("2d"),
+	area = $('#text');
 
 var cs = { height: canvas.attr('height'), width: canvas.attr('width') };
-var fontSize = 13;
+
+var fontSize = 4;
+if (MINFONTSIZE) {
+	fontSize = 13;
+}
 
 ctx.font = fontSize + "px monospace";
 
 function resizeCanvas(goalSize) {
-	if (!goalSize) { goalSize = 3; }
+	if (!goalSize) { goalSize = 4; }
 
 	// determine actual height and width
-	var height = canvas.height();
+	var height = canvas.height(),
 		width = canvas.width();
-
-	// resize to a ratio, fontSize == goalSize
-	var ratio = fontSize / goalSize;
 	
-	canvas.attr('height', height * ratio);
-	canvas.attr('width', width * ratio);
+	// resize to a ratio, fontSize == goalSize
+	if (MINFONTSIZE) {
+		var ratio = fontSize / goalSize;
+		height = height * ratio;
+		width = width * ratio;
+		canvas.attr('height', height);
+		canvas.attr('width', width);
+	}
 
 	cs = { height: canvas.attr('height'), width: canvas.attr('width') };
 }
