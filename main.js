@@ -10,14 +10,15 @@ $.ajax({
 	}
 });
 
-
 function createCanvas() {
-	var height = 300,
-		width = 200;
-
+	var width = 200,
+		cvdiv = $('#canvasDiv'),
+		bodyHeight = $('body').innerHeight(),
+		height = bodyHeight - cvdiv.position().top;
+	
 	canvas = $(['<canvas id="view" width="', width,
 			'px" height="', height, 'px"></canvas>'].join(""))
-		.appendTo('#canvasDiv');
+		.appendTo(cvdiv);
 }
 
 if (!canvas.size()) {
