@@ -4,7 +4,7 @@ function createCanvas(cvdiv) {
 	var width = 200,
 		bodyHeight = $('body').innerHeight(),
 		height = bodyHeight - cvdiv.position().top;
-	
+
 	return $(['<canvas id="view" width="', width,
 			'px" height="', height, 'px"></canvas>'].join(""))
 		.appendTo(cvdiv);
@@ -44,7 +44,7 @@ $.minimap.prototype = {
 		this.text.unbind(this.redrawProxy);
 		this.container.unbind(this.redrawProxy);
 	},
-	
+
 	clear: function() {
 		var ctx = this.ctx;
 
@@ -83,11 +83,18 @@ $.minimap.prototype = {
 
 		this.ctx.restore();
 	},
-	
+
+	drawBox: function drawBox() {
+		// figure out where we are
+		var top = this.text.scrollTop();
+		console.log("offset from top: " + top);
+	},
+
 	redraw: function () {
 		console.time("redrawing");
 		this.clear();
 		this.drawText();
+		this.drawBox();
 		console.timeEnd("redrawing");
 	}
 };
