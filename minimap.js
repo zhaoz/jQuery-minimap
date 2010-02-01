@@ -20,15 +20,7 @@ $.minimap.prototype = {
 		this.settings = $.extend({}, $.minimap.defaults, options);
 
 		this.container = container;
-		$(container).bind('redraw', $.proxy(this.redraw, this));
-
 		this.text = textArea;
-
-		var self = this;
-		this.keyUpHandler = function () {
-			self.redraw();
-		};
-		textArea.live('keyup', this.keyUpHandler);
 
 		this.canvas = createCanvas(container);
 		this.ctx = this.canvas.get(0).getContext("2d");
@@ -38,6 +30,20 @@ $.minimap.prototype = {
 		this.width = this.canvas.attr('width');
 
 		this.redraw();
+	},
+
+	bindHandlers: function () {
+		this.redrawProxy = $.proxy(this.redraw, this);
+		this.container.bind('redraw', this.redrawProxy);
+		var self = this;
+
+		this.keyUpHandler = function () { self.redraw(); };
+		this.text.live('keyup', this.keyUpHandler);
+	},
+
+	unbindHandlers: function () {
+		this.text.die(this.keyUpHandler);
+		this.container.unbind(this.redrawProxy);
 	},
 	
 	clear: function() {
