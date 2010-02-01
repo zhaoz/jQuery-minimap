@@ -32,6 +32,7 @@ function createCanvas(cvdiv) {
 
 $.minimap = function () { this.init.apply(this, arguments); };
 $.minimap.defaults = {
+	lineWidth: 2,
 	fontSize: 4
 };
 
@@ -69,19 +70,31 @@ $.minimap.prototype = {
 		this.container.unbind(this.redrawProxy);
 	},
 
-	clear: function() {
-		var ctx = this.ctx;
+	lineToCtxPx: function (line) {
+		return line * this.settings.fontSize;
+	},
+
+	clear: function(regional, top, bottom) {
+		var ctx = this.ctx,
+			y = 0,
+			h = this.height;
 
 		ctx.save();
 
-		ctx.clearRect(0, 0, this.width, this.height);
+		if (regional) {
+			// only clear from top line to bottom line
+			y = this.lineToCtxPx(top) - this.settings.lineWidth;
+			h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
+		}
+
+		ctx.clearRect(0, y, this.width, h);
 		ctx.fillStyle = "rgb(100, 100, 100)";
-		ctx.fillRect(0, 0, this.width, this.height);
+		ctx.fillRect(0, y, this.width, h);
 
 		ctx.restore();
 	},
 
-	drawText: function drawText() {
+	drawText: function drawText(useCache, top, bottom) {
 		var fontSize = this.settings.fontSize;
 		this.ctx.save();
 
@@ -90,17 +103,19 @@ $.minimap.prototype = {
 		if (!text) { return; }
 
 		// break text in to lines
-		var lines = text.split("\n");
+		if (!useCache) {
+			this.lines = text.split("\n");
+		}
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii,
-			off = fontSize;
-			len = lines.length,
+		var ii = 0,
+			off = ii * fontSize;
+			len = this.lines.length,
 			line = "";
 
-		for (ii = 0; ii < len; ii++) {
-			line = lines[ii];
+		for (ii; ii < len; ii++) {
+			line = this.lines[ii];
 			this.ctx.fillText(line, 0, off);
 			off += fontSize;
 		}
@@ -120,22 +135,38 @@ $.minimap.prototype = {
 		this.ctx.save();
 
 		this.ctx.strokeStyle = "rgb(200,200,200)";
-		this.ctx.lineWidth = 2;
+		this.ctx.lineWidth = this.settings.lineWidth;
 		this.ctx.fillStyle = "white";
 		this.ctx.strokeRect(0, top, this.width, bottom);
 
 		this.ctx.restore();
 	},
 
-	redraw: function () {
-		var top = this.curLine() * this.settings.fontSize,
-			bottom = this.numLinesShown() * this.settings.fontSize;
+	redraw: function (eve) {
+		var linesShown = this.numLinesShown(),
+			topLine = this.curLine(),
+			bottomLine = linesShown + topLine,
+			topPx = topLine * this.settings.fontSize,
+			bottomPx = linesShown * this.settings.fontSize,
+			affectedTop,
+			affectedBottom,
+			isScroll = eve.type === "scroll";
 
 		console.time("redrawing");
 
-		this.clear();
-		this.drawText();
-		this.drawBox(top, bottom);
+		if (isScroll) {
+			affectedTop = Math.min(topLine, this.oldTopLine);
+			affectedBottom = Math.max(bottomLine, this.oldBottomLine);
+		}
+
+		// only need to clear and redraw
+		this.clear(isScroll, affectedTop, affectedBottom);
+		this.drawText(isScroll, affectedTop, affectedBottom);
+
+		this.drawBox(topPx, bottomPx);
+
+		this.oldTopLine = topLine;
+		this.oldBottomLine = bottomLine;
 
 		console.timeEnd("redrawing");
 	}

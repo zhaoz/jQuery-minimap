@@ -1,6 +1,6 @@
 (function ($) {
 
-$('#canvasDiv').minimap();
+$('#canvasDiv').minimap({ debug: true });
 
 // load jquery into textarea
 $.ajax({
