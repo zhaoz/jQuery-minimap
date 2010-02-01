@@ -19,8 +19,9 @@ $.minimap.prototype = {
 	init: function (container, textArea, options) {
 		this.settings = $.extend({}, $.minimap.defaults, options);
 
-		// create the canvas
 		this.container = container;
+		$(container).bind('redraw', $.proxy(this.redraw, this));
+
 		this.text = textArea;
 
 		var self = this;
@@ -89,7 +90,6 @@ $.fn.minimap = function (options) {
 	$(this).each(function () {
 		var inst = new $.minimap($(this), $('#text'),  options);
 		$(this).data('minimap', inst);
-		$(this).bind('redraw', $.proxy(inst.redraw, inst));
 	});
 };
 
