@@ -29,20 +29,18 @@ $.minimap.prototype = {
 		this.height = this.canvas.attr('height');
 		this.width = this.canvas.attr('width');
 
-		this.redraw();
+		this.bindHandlers();
 	},
 
 	bindHandlers: function () {
 		this.redrawProxy = $.proxy(this.redraw, this);
 		this.container.bind('redraw', this.redrawProxy);
-		var self = this;
-
-		this.keyUpHandler = function () { self.redraw(); };
-		this.text.live('keyup', this.keyUpHandler);
+		this.text.live('keyup', this.redrawProxy)
+				.live('scroll', this.redrawProxy);
 	},
 
 	unbindHandlers: function () {
-		this.text.die(this.keyUpHandler);
+		this.text.die(this.redrawProxy);
 		this.container.unbind(this.redrawProxy);
 	},
 	
@@ -86,8 +84,10 @@ $.minimap.prototype = {
 	},
 	
 	redraw: function () {
+		console.time("redrawing");
 		this.clear();
 		this.drawText();
+		console.timeEnd("redrawing");
 	}
 };
 
