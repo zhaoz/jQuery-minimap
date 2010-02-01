@@ -36,11 +36,12 @@ $.minimap.prototype = {
 		this.redrawProxy = $.proxy(this.redraw, this);
 		this.container.bind('redraw', this.redrawProxy);
 		this.text.live('keyup', this.redrawProxy)
-				.live('scroll', this.redrawProxy);
+				.bind('scroll', this.redrawProxy);
 	},
 
 	unbindHandlers: function () {
 		this.text.die(this.redrawProxy);
+		this.text.unbind(this.redrawProxy);
 		this.container.unbind(this.redrawProxy);
 	},
 	
