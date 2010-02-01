@@ -1,4 +1,4 @@
-var MINFONTSIZE = false;
+var canvas = $("#view");
 
 (function ($) {
 /**
@@ -33,39 +33,30 @@ $.ajax({
 	}
 });
 
+
+function createCanvas() {
+	var height = 300,
+		width = 200;
+
+	canvas = $(['<canvas id="view" width="', width,
+			'px" height="', height, 'px"></canvas>'].join(""))
+		.appendTo('#canvasDiv');
+}
+
+if (!canvas.size()) {
+	createCanvas();
+}
+
 }(jQuery));
 
-var canvas = $("#view"),
-	ctx = canvas.get(0).getContext("2d"),
+var ctx = canvas.get(0).getContext("2d"),
 	area = $('#text');
 
 var cs = { height: canvas.attr('height'), width: canvas.attr('width') };
 
 var fontSize = 4;
-if (MINFONTSIZE) {
-	fontSize = 13;
-}
 
 ctx.font = fontSize + "px monospace";
-
-function resizeCanvas(goalSize) {
-	if (!goalSize) { goalSize = 4; }
-
-	// determine actual height and width
-	var height = canvas.height(),
-		width = canvas.width();
-	
-	// resize to a ratio, fontSize == goalSize
-	if (MINFONTSIZE) {
-		var ratio = fontSize / goalSize;
-		height = height * ratio;
-		width = width * ratio;
-		canvas.attr('height', height);
-		canvas.attr('width', width);
-	}
-
-	cs = { height: canvas.attr('height'), width: canvas.attr('width') };
-}
 
 function clear() {
 	ctx.save();
@@ -108,7 +99,6 @@ function refreshZoom() {
 	drawText();
 }
 
-resizeCanvas();
 refreshZoom();
 
 area.live('keyup', function (eve) {
