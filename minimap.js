@@ -116,7 +116,7 @@ $.minimap.prototype = {
 		
 		for (ii; ii < len; ii++) {
 			line = this.lines[ii];
-			this.ctx.fillText(line, 0, off);
+			this.ctx.fillText(line, 0, off, this.width);
 			off += fontSize;
 
 			if (off > this.height) {
