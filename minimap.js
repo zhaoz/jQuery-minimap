@@ -108,12 +108,12 @@ $.minimap.prototype = {
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii = top ? top : 0,
+		var ii = top ? Math.max(top - 1, 0) : 0,
 			fontSize = this.settings.fontSize,
-			off = ii * fontSize;
-			len = typeof(bottom) === "number" ? bottom + 1 : this.lines.length,
+			off = ii * fontSize + fontSize;
+			len = typeof(bottom) === "number" ? bottom : this.lines.length,
 			line = "";
-		
+
 		for (ii; ii < len; ii++) {
 			line = this.lines[ii];
 			this.ctx.fillText(line, 0, off, this.width);
