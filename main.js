@@ -1,4 +1,7 @@
 (function ($) {
+
+$('#canvasDiv').minimap();
+
 // load jquery into textarea
 $.ajax({
 	url: $('script[rel="jquery"]').attr('src'),
@@ -7,6 +10,4 @@ $.ajax({
 		$('#canvasDiv').trigger('redraw');
 	}
 });
-
-$('#canvasDiv').minimap();
 }(jQuery));
