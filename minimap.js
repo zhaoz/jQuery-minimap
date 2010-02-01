@@ -95,7 +95,6 @@ $.minimap.prototype = {
 	},
 
 	drawText: function drawText(useCache, top, bottom) {
-		var fontSize = this.settings.fontSize;
 		this.ctx.save();
 
 		// get the text from the textarea
@@ -109,11 +108,12 @@ $.minimap.prototype = {
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii = 0,
+		var ii = top ? top : 0,
+			fontSize = this.settings.fontSize,
 			off = ii * fontSize;
-			len = this.lines.length,
+			len = typeof(bottom) === "number" ? bottom + 1 : this.lines.length,
 			line = "";
-
+		
 		for (ii; ii < len; ii++) {
 			line = this.lines[ii];
 			this.ctx.fillText(line, 0, off);
