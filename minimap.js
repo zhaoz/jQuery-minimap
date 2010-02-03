@@ -110,10 +110,10 @@ $.minimap.prototype = {
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii = regional && top ? Math.max(top - 1, 0) : 0,
+		var ii = Math.max(top - 1, 0),
 			fontSize = this.settings.fontSize,
 			off = regional ? ii * fontSize : 0;
-			len = regional && typeof(bottom) === "number" ? bottom : this.lines.length,
+			len = bottom,
 			line = "";
 
 		for (ii; ii < len; ii++) {
@@ -166,11 +166,19 @@ $.minimap.prototype = {
 		var txtLines = this.linesInTextArea(),
 			topLine = this.curLine(),
 			bottomLine = txtLines + topLine,
-			topPx = this.lineToCtxPx(topLine),
+
+			// num lines scrolled down (negative for up)
+			changeDelta = topLine - this.oldTopLine,	
+
+			topPx = this.lineToCtxPx(topLine - this.cTopLine),
 			pxHeight = this.lineToCtxPx(txtLines),
 			isScroll = eve.type === "scroll",
 			data = eve.data || {},
-			regional, affectedTop, affectedBottom;
+			regional = false,
+			canvasScroll = false,
+
+			affectedTop = this.cTopLine,
+			affectedBottom = this.cBottomLine;
 
 		if (data.pre) {
 			if (!data.pre(eve)) { return; }
@@ -180,17 +188,20 @@ $.minimap.prototype = {
 			console.time("redrawing");
 		}
 
-		if (isScroll) {
+		if (bottomLine > this.cBottomLine) {
+			canvasScroll = true;
+		} else if (topLine < this.cTopLine) {
+			canvasScroll = true;
+		} else if (isScroll) {
 			affectedTop = Math.round(Math.min(topLine, this.oldTopLine));
 			affectedBottom = Math.round(Math.max(bottomLine, this.oldBottomLine));
 			regional = true;
 		}
 
-		// TODO need to determine if a isScroll change is possible
-		// is the last line shown > than what we are showing now?
-		if (bottomLine > this.cBottomLine || topLine < this.cTopLine) {
-			console.log('overscroll');
-			regional = false;
+		if (canvasScroll) {
+			topPx += this.lineToCtxPx(-changeDelta);
+			this.cTopLine = affectedTop = affectedTop + changeDelta;
+			this.cBottomLine = affectedBottom = affectedBottom + changeDelta;
 		}
 
 		// need to clear and redraw old space to new space region
