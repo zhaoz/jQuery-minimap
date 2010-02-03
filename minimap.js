@@ -153,9 +153,9 @@ $.minimap.prototype = {
 	},
 
 	changeHandler: function (eve) {
-		// if it's an arrow key, then we can ignore.
 		var key = eve.which;
-		if (key <= 40 && key >= 37) {
+		if (key <= 40 && key >= 33) {
+			// arrow keys, pg up/down, home/end
 			return false;	// this event will be handled by scroll
 		}
 
