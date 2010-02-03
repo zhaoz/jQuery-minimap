@@ -32,7 +32,7 @@ function createCanvas(cvdiv) {
 
 $.minimap = function () { this.init.apply(this, arguments); };
 $.minimap.defaults = {
-	lineWidth: 2,
+	lineWidth: 1,
 	fontSize: 4
 };
 
