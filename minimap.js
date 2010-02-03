@@ -44,7 +44,7 @@ $.minimap.prototype = {
 		this.text = textArea;
 
 		// detect what actual font pixels are in textArea
-		this.onelinepx = $.detectFontSize(
+		this.lineHeight = $.detectFontSize(
 				parseInt(this.text.css('font-size'), 10));
 
 		this.canvas = createCanvas(container);
@@ -128,11 +128,11 @@ $.minimap.prototype = {
 	},
 
 	curLine: function curLines() {
-		return Math.round(this.text.scrollTop() / this.onelinepx);
+		return Math.round(this.text.scrollTop() / this.lineHeight);
 	},
 
 	numLinesShown: function numLinesShown() {
-		return this.text.innerHeight() / this.onelinepx;
+		return this.text.innerHeight() / this.lineHeight;
 	},
 
 	drawBox: function drawBox(top, bottom) {
