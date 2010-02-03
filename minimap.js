@@ -128,7 +128,7 @@ $.minimap.prototype = {
 	},
 
 	curLine: function curLines() {
-		return this.text.scrollTop() / this.onelinepx;
+		return Math.round(this.text.scrollTop() / this.onelinepx);
 	},
 
 	numLinesShown: function numLinesShown() {
@@ -179,7 +179,7 @@ $.minimap.prototype = {
 			affectedBottom = Math.max(bottomLine, this.oldBottomLine);
 		}
 
-		// only need to clear and redraw
+		// need to clear and redraw old space to new space region
 		this.clear(isScroll, affectedTop, affectedBottom);
 		this.drawText(isScroll, affectedTop, affectedBottom);
 
