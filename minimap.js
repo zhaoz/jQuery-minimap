@@ -60,7 +60,7 @@ $.minimap.prototype = {
 	bindHandlers: function () {
 		this.redrawProxy = $.proxy(this.redraw, this);
 		this.container.bind('redraw', this.redrawProxy);
-		this.text.live('keyup', this.redrawProxy)
+		this.text.live('keyup', {pre: this.changeHandler}, this.redrawProxy)
 				.bind('scroll', this.redrawProxy);
 	},
 
@@ -146,15 +146,29 @@ $.minimap.prototype = {
 		this.ctx.restore();
 	},
 
+	changeHandler: function (eve) {
+		// if it's an arrow key, then we can ignore.
+		var key = eve.which;
+		if (key <= 40 && key >= 37) {
+			return false;	// this event will be handled by scroll
+		}
+
+		return true;
+	},
+
 	redraw: function (eve) {
 		var linesShown = this.numLinesShown(),
 			topLine = this.curLine(),
 			bottomLine = linesShown + topLine,
 			topPx = topLine * this.settings.fontSize,
 			bottomPx = linesShown * this.settings.fontSize,
-			affectedTop,
-			affectedBottom,
-			isScroll = eve.type === "scroll";
+			isScroll = eve.type === "scroll",
+			data = eve.data || {},
+			affectedTop, affectedBottom;
+		
+		if (data.pre) {
+			if (data.pre(eve)) { return; }
+		}
 
 		if (this.settings.debug) {
 			console.time("redrawing");
