@@ -76,6 +76,10 @@ $.minimap.prototype = {
 	lineToCtxPx: function (line) {
 		return line * this.settings.fontSize;
 	},
+	
+	txt2ctxPx: function (px) {
+		return px * this.settings.fontSize / this.fontHeight;
+	},
 
 	clear: function(regional, top, bottom) {
 		var ctx = this.ctx,
