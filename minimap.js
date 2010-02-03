@@ -1,4 +1,12 @@
 (function ($) {
+if (!window.console) {
+	window.console = {
+		debug: $.noop,
+		info: $.noop,
+		log: $.noop,
+		error: $.noop
+	};
+}
 
 $.detectFontSize = function (tSize, options) {
 	var size = tSize || 1,
