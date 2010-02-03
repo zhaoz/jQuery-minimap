@@ -110,7 +110,7 @@ $.minimap.prototype = {
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii = Math.max(top - 1, 0),
+		var ii = regional ? Math.max(top - 1, 0) : top,
 			fontSize = this.settings.fontSize,
 			off = regional ? ii * fontSize : 0;
 			len = bottom,
