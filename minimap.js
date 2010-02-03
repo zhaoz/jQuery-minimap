@@ -160,8 +160,8 @@ $.minimap.prototype = {
 		var linesShown = this.numLinesShown(),
 			topLine = this.curLine(),
 			bottomLine = linesShown + topLine,
-			topPx = topLine * this.settings.fontSize,
-			bottomPx = linesShown * this.settings.fontSize,
+			topPx = this.lineToCtxPx(topLine),
+			pxHeight = this.lineToCtxPx(linesShown),
 			isScroll = eve.type === "scroll",
 			data = eve.data || {},
 			affectedTop, affectedBottom;
@@ -183,8 +183,10 @@ $.minimap.prototype = {
 		this.clear(isScroll, affectedTop, affectedBottom);
 		this.drawText(isScroll, affectedTop, affectedBottom);
 
-		this.drawBox(topPx, bottomPx);
+		// draw box only around the new space
+		this.drawBox(topPx, pxHeight);
 
+		// remember current space as new space
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
 
