@@ -54,6 +54,9 @@ $.minimap.prototype = {
 		this.height = this.canvas.attr('height');
 		this.width = this.canvas.attr('width');
 
+		this.cTopLine = 0;
+		this.cBottomLine = this.height / this.settings.fontSize;
+
 		this.bindHandlers();
 	},
 
