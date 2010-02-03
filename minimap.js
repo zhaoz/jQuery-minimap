@@ -100,6 +100,10 @@ $.minimap.prototype = {
 
 		ctx.restore();
 	},
+	
+	reloadText: function () {
+		this.lines = this.text.val().split("\n");
+	},
 
 	drawText: function drawText(useCache, top, bottom) {
 		this.ctx.save();
