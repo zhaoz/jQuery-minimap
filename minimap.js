@@ -90,7 +90,7 @@ $.minimap.prototype = {
 
 		if (regional) {
 			// only clear from top line to bottom line
-			y = this.lineToCtxPx(top) - this.settings.lineWidth;
+			y = this.lineToCtxPx(top - 1);
 			h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
 		}
 
