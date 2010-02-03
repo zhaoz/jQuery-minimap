@@ -44,7 +44,7 @@ $.minimap.prototype = {
 		this.text = textArea;
 
 		// detect what actual font pixels are in textArea
-		this.lineHeight = $.detectFontSize(
+		this.fontHeight = $.detectFontSize(
 				parseInt(this.text.css('font-size'), 10));
 
 		this.canvas = createCanvas(container);
@@ -105,31 +105,22 @@ $.minimap.prototype = {
 		this.lines = this.text.val().split("\n");
 	},
 
-	drawText: function drawText(useCache, top, bottom) {
+	drawText: function drawText(regional, top, bottom) {
 		this.ctx.save();
-
-		// get the text from the textarea
-		var text = this.text.val();
-		if (!text) { return; }
-
-		// break text in to lines
-		if (!useCache) {
-			this.lines = text.split("\n");
-		}
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
 
-		var ii = useCache && top ? Math.max(top - 1, 0) : 0,
+		var ii = regional && top ? Math.max(top - 1, 0) : 0,
 			fontSize = this.settings.fontSize,
-			off = ii * fontSize + fontSize;
-			len = useCache && typeof(bottom) === "number" ? bottom : this.lines.length,
+			off = regional ? ii * fontSize : 0;
+			len = regional && typeof(bottom) === "number" ? bottom : this.lines.length,
 			line = "";
 
 		for (ii; ii < len; ii++) {
-			line = this.lines[ii];
-			this.ctx.fillText(line, 0, off, this.width);
 			off += fontSize;
 
+			line = this.lines[ii];
+			this.ctx.fillText(line, 0, off, this.width);
 			if (off > this.height) {
 				break;			// no need to draw stuff out of boundary
 			}
@@ -139,11 +130,15 @@ $.minimap.prototype = {
 	},
 
 	curLine: function curLines() {
-		return Math.round(this.text.scrollTop() / this.lineHeight);
+		return this.text.scrollTop() / this.fontHeight;
 	},
 
-	numLinesShown: function numLinesShown() {
-		return this.text.innerHeight() / this.lineHeight;
+	/**
+	 * Determine the number of lines being shown in the textarea, this may 
+	 * not return an integer.
+	 */
+	linesInTextArea: function linesInTextArea() {
+		return this.text.innerHeight() / this.fontHeight;
 	},
 
 	drawBox: function drawBox(top, bottom) {
@@ -168,15 +163,15 @@ $.minimap.prototype = {
 	},
 
 	redraw: function (eve) {
-		var linesShown = this.numLinesShown(),
+		var txtLines = this.linesInTextArea(),
 			topLine = this.curLine(),
-			bottomLine = linesShown + topLine,
+			bottomLine = txtLines + topLine,
 			topPx = this.lineToCtxPx(topLine),
-			pxHeight = this.lineToCtxPx(linesShown),
+			pxHeight = this.lineToCtxPx(txtLines),
 			isScroll = eve.type === "scroll",
 			data = eve.data || {},
-			affectedTop, affectedBottom;
-		
+			regional, affectedTop, affectedBottom;
+
 		if (data.pre) {
 			if (!data.pre(eve)) { return; }
 		}
@@ -186,13 +181,25 @@ $.minimap.prototype = {
 		}
 
 		if (isScroll) {
-			affectedTop = Math.min(topLine, this.oldTopLine);
-			affectedBottom = Math.max(bottomLine, this.oldBottomLine);
+			affectedTop = Math.round(Math.min(topLine, this.oldTopLine));
+			affectedBottom = Math.round(Math.max(bottomLine, this.oldBottomLine));
+			regional = true;
+		}
+
+		// TODO need to determine if a isScroll change is possible
+		// is the last line shown > than what we are showing now?
+		if (bottomLine > this.cBottomLine || topLine < this.cTopLine) {
+			console.log('overscroll');
+			regional = false;
 		}
 
 		// need to clear and redraw old space to new space region
-		this.clear(isScroll, affectedTop, affectedBottom);
-		this.drawText(isScroll, affectedTop, affectedBottom);
+		this.clear(isScroll && regional, affectedTop, affectedBottom);
+
+		if (!isScroll) {
+			this.reloadText();
+		}
+		this.drawText(regional, affectedTop, affectedBottom);
 
 		// draw box only around the new space
 		this.drawBox(topPx, pxHeight);
