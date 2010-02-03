@@ -184,7 +184,7 @@ $.minimap.prototype = {
 			if (!data.pre(eve)) { return; }
 		}
 
-		if (this.settings.debug) {
+		if (this.settings.timing) {
 			console.time("redrawing");
 		}
 
@@ -219,7 +219,7 @@ $.minimap.prototype = {
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
 
-		if (this.settings.debug) {
+		if (this.settings.timing) {
 			console.timeEnd("redrawing");
 		}
 	}
