@@ -174,7 +174,7 @@ $.minimap.prototype = {
 			affectedTop, affectedBottom;
 		
 		if (data.pre) {
-			if (data.pre(eve)) { return; }
+			if (!data.pre(eve)) { return; }
 		}
 
 		if (this.settings.debug) {
