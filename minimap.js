@@ -102,7 +102,7 @@ $.minimap.prototype = {
 	},
 	
 	reloadText: function () {
-		this.lines = this.text.val().split("\n");
+		this.lines = this.text.val().replace(/\t/g, "    ").split("\n");
 	},
 
 	drawText: function drawText(regional, top, bottom) {
