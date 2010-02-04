@@ -1,6 +1,9 @@
 (function ($) {
 
-$('#canvasDiv').minimap({ debug: true, timing: false });
+if (!window.opera) {
+	// opera doesn't have fillText
+	$('#canvasDiv').minimap({ debug: true, timing: false });
+}
 
 // load jquery into textarea
 $.ajax({
