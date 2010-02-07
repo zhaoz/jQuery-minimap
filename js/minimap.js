@@ -191,10 +191,6 @@ $.minimap.prototype = {
 		return line * this.settings.fontSize;
 	},
 	
-	txt2ctxPx: function (px) {
-		return px * this.settings.fontSize / this.fontHeight;
-	},
-
 	reloadText: function () {
 		this.mmWindow.updateText(this.text.val());
 	},
