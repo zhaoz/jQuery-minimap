@@ -1,3 +1,13 @@
+/**
+ * @description Draw a minimap of text
+ * @author Ziling Zhao <zilingzhao@gmail.com>
+ *
+ * XXX canvas text not redrawing correctly for scroll up
+ * XXX clearing doesn't work properly for scroll up
+ * XXX scroll down box does not align with bottom if not exact
+ * XXX on large scroll offset count looks corrupted
+ * TODO need to break up view port idea into better abstract model
+ */
 (function ($) {
 
 function createCanvas(cvdiv) {
@@ -12,8 +22,8 @@ function createCanvas(cvdiv) {
 
 $.minimap = function () { this.init.apply(this, arguments); };
 $.minimap.defaults = {
-	lineWidth: 1,
-	fontSize: 4
+	lineWidth: 1,			// width in px for the box
+	fontSize: 4				// font size of text in canvas
 };
 
 $.minimap.prototype = {
