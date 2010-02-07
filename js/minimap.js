@@ -20,104 +20,159 @@ $.minimap.defaults = {
 $.minimap.CanvasView = function () { this.init.apply(this, arguments); };
 
 $.minimap.CanvasView.prototype = {
-	init: function (container, options) {
-		this.settings = $.extend({
-				fontSize: 4		// size of font to render in canvas
-			}, options);
-		this.container = container;
 
-		this.lines = [];		// the lines of text to draw
+init: function (container, options) {
+	this.settings = $.extend({
+			fontSize: 4		// size of font to render in canvas
+		}, options);
+	this.container = container;
 
-		this.viewAbleLines = 0;	// how many lines can we see in the canvas?
-		this.topLine = 0;		// what line num is at the top (viewable)
-		this.bottomLine = 0;	// what line is at the bottom (viewable)
+	this.lines = [];		// the lines of text to draw
 
-		// construct the canvas and get the context
-		this.canvas = this._createCanvas(container);
-		this.ctx = this.canvas.get(0).getContext("2d");
-		this.ctx.font = this.settings.fontSize + "px monospace";
+	this.topLine = 0;		// what line num is at the top (viewable)
+	this.bottomLine = 0;	// what line is at the bottom (viewable)
 
-		// canvas height and width in px, aka view window size
-		this.vwHeight = this.canvas.attr('height');
-		this.vwWidth = this.canvas.attr('width');
+	// construct the canvas and get the context
+	this.canvas = this._createCanvas(container);
+	this.ctx = this.canvas.get(0).getContext("2d");
+	this.ctx.font = this.settings.fontSize + "px monospace";
 
-		// total lines that the canvas can show
-		this.maxLines = this.vwHeight / this.settings.fontSize;
-	},
+	// canvas height and width in px, aka view window size
+	this.vwHeight = this.canvas.attr('height');
+	this.vwWidth = this.canvas.attr('width');
 
-	_createCanvas: function (cvdiv) {
-		var width = 200,
-			bodyHeight = $('body').innerHeight(),
-			height = bodyHeight - cvdiv.position().top;
+	// total lines that the canvas can show
+	this.maxLines = this.vwHeight / this.settings.fontSize;
+},
 
-		return $(['<canvas id="view" width="', width,
-				'px" height="', height, 'px"></canvas>'].join(""))
-			.appendTo(cvdiv);
-	},
+_createCanvas: function (cvdiv) {
+	var width = 200,
+		bodyHeight = $('body').innerHeight(),
+		height = bodyHeight - cvdiv.position().top;
 
-	getContext: function () {
-		return this.ctx;
-	},
-	
-	/**
-	 * @description update the lines of text
-	 * @param text
-	 */
-	updateText: function (text) {
-		this.lines = text.replace(/\t/g, "    ").split("\n");
+	return $(['<canvas id="view" width="', width,
+			'px" height="', height, 'px"></canvas>'].join(""))
+		.appendTo(cvdiv);
+},
 
-		// need to update bottomLine
-		var possibleBtm = this.lines.length - this.topLine,
-			maxBtm = this.topLine + this.maxLines;
-		this.bottomLine = Math.min(possibleBtm, maxBtm);
-	},
-	
-	clear: function (regional, top, bottom) {
-		var ctx = this.ctx,
-			y = 0,
-			h = this.vwHeight;
+getContext: function () {
+	return this.ctx;
+},
 
-		ctx.save();
+/**
+ * @description update the lines of text
+ * @param text
+ */
+updateText: function (text) {
+	this.lines = text.replace(/\t/g, "    ").split("\n");
 
+	// need to update bottomLine
+	var possibleBtm = this.lines.length - this.topLine,
+		maxBtm = this.topLine + this.maxLines;
+	this.bottomLine = Math.min(possibleBtm, maxBtm);
+},
 
-		if (regional) {
-			// only clear from top line to bottom line
-			y = this.lineToCtxPx(top - 1);
-			h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
-		}
+clear: function (regional, top, bottom) {
+	var ctx = this.ctx,
+		y = 0,
+		h = this.vwHeight;
 
-		// ctx.clearRect(0, y, this.vwWidth, h);	// is this necessary?
-		ctx.fillStyle = "rgb(100, 100, 100)";
-		ctx.fillRect(0, y, this.vwWidth, h);
+	ctx.save();
 
 
-		ctx.restore();
-	},
-	
-	/**
-	 * @description repaint the entire view window
-	 */
-	redrawAll: function () {
-		this.ctx.save();
-		this.ctx.fillStyle = "rgb(255, 255, 255)";
-
-		var curLine = this.topLine,
-			fontSize = this.settings.fontSize,
-			off = (1 - curLine - parseInt(curLine, 10)) * fontSize,
-			btm = this.bottomLine,
-			line = "";
-
-		for (curLine; curLine < btm; curLine++) {
-			line = this.lines[curLine];
-			this.ctx.fillText(line, 0, off, this.vwWidth);
-			if (off > this.vwHeight + fontSize) {
-				break;			// no need to draw stuff out of view window
-			}
-			off += fontSize;
-		}
-
-		this.ctx.restore();
+	if (regional) {
+		// only clear from top line to bottom line
+		y = this.lineToCtxPx(top - 1);
+		h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
 	}
+
+	// ctx.clearRect(0, y, this.vwWidth, h);	// is this necessary?
+	ctx.fillStyle = "rgb(100, 100, 100)";
+	ctx.fillRect(0, y, this.vwWidth, h);
+
+
+	ctx.restore();
+},
+
+/**
+ * @description repaint the entire view window
+ */
+redrawAll: function () {
+	this.clear();
+
+	this.ctx.save();
+	this.ctx.fillStyle = "rgb(255, 255, 255)";
+
+	var curLine = Math.floor(this.topLine),
+		fontSize = this.settings.fontSize,
+		off = (1 - (this.topLine - curLine)) * fontSize,
+		btm = this.bottomLine,
+		line = "";
+
+	console.debug("drawing with starting offset: ", off);
+
+	for (curLine; curLine < btm; curLine++) {
+		line = this.lines[curLine];
+		this.ctx.fillText(line, 0, off, this.vwWidth);
+		if (off > this.vwHeight + fontSize) {
+			break;			// no need to draw stuff out of view window
+		}
+		off += fontSize;
+	}
+
+	this.ctx.restore();
+},
+
+/**
+ * scroll view window x lines
+ * @description scrolldown some num of lines, negative is up, this scroll
+ *   scrolls entire view window
+ * @param nLines, some number of lines scrolled
+ */
+scrollLines: function (nLines, redraw) {
+	this.scrollTop(this.topLine + nLine, redraw);
+},
+
+scrollTop: function (nTopLine, redraw) {
+	var offset = this.topLine - nTopLine,		// negative if scrolling up
+		nBottomLine = this.bottomLine + offset;
+
+	/*
+	console.debug("given nTopLine: " + nTopLine);
+	console.debug("topLine: ", this.topLine);
+	console.debug("bottomLine: ", this.bottomLine);
+	*/
+
+	if (nTopLine < 0) {
+		this.topLine = 0;
+		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
+	} else if (nBottomLine > this.lines.length) {
+		this.bottomLine = this.lines.length;
+		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
+	} else {
+		this.topLine = nTopLine;
+		this.bottomLine = Math.min(this.lines.length, this.topLine + this.maxLines);
+	}
+
+	/*
+	console.debug("after topLine: ", this.topLine);
+	console.debug("after bottomLine: ", this.bottomLine);
+	*/
+
+	if (redraw) {
+		this.redrawAll();
+	}
+},
+
+scrollBottom: function (nBottomLine, redraw) {
+	var offset = nBottomLine - this.bottomLine,		// negative if scrolling up
+		nTopLine = nBottomLine - this.maxLines;
+
+	console.debug("nBottomLine: ", nBottomLine);
+	// console.debug("offset: " , offset);
+
+	this.scrollTop(nTopLine, redraw);
+}
 };
 
 $.minimap.prototype = {
@@ -128,17 +183,16 @@ $.minimap.prototype = {
 
 		// this is the actual canvas
 		this.mmWindow = new $.minimap.CanvasView(this.container);
-		this.text = textArea;
+		this.text = textArea
+			.attr('wrap', 'off')
+			.css('overflow-x', 'scroll');
 
 		// detect what actual font pixels are in textArea
 		this.fontHeight = $.detectFontSize(
 				parseInt(this.text.css('font-size'), 10));
 
-		/*
-		this.cTopLine = 0;
-		this.cBottomLine = this.height / this.settings.fontSize;
-		console.debug("cBottom: ", this.cBottomLine);
-		*/
+		this.oldTopLine = 0;
+		this.oldBottomLine = 0;
 		this.bindHandlers();
 	},
 
@@ -167,33 +221,6 @@ $.minimap.prototype = {
 		this.mmWindow.updateText(this.text.val());
 	},
 
-	drawText: function drawText(regional, top, bottom) {
-		// if (window.opera) { return; }
-		this.ctx.save();
-
-		this.ctx.fillStyle = "rgb(255, 255, 255)";
-
-		var ii = regional ? Math.max(top - 1, 0) : top,
-			fontSize = this.settings.fontSize,
-			off = regional ? ii * fontSize : 0;
-			len = bottom,
-			line = "";
-
-		var first = 0;
-
-		for (ii; ii < len; ii++) {
-			off += fontSize;
-
-			line = this.lines[ii];
-			this.ctx.fillText(line, 0, off, this.width);
-			if (off > this.height) {
-				break;			// no need to draw stuff out of boundary
-			}
-		}
-
-		this.ctx.restore();
-	},
-
 	curLine: function curLines() {
 		return this.text.scrollTop() / this.fontHeight;
 	},
@@ -203,7 +230,7 @@ $.minimap.prototype = {
 	 * not return an integer.
 	 */
 	linesInTextArea: function linesInTextArea() {
-		return this.text.innerHeight() / this.fontHeight;
+		return this.text.get(0).clientHeight / this.fontHeight;
 	},
 
 	drawBox: function drawBox(top, bottom) {
@@ -233,65 +260,61 @@ $.minimap.prototype = {
 			bottomLine = txtLines + topLine,
 
 			// num lines scrolled down (negative for up)
-			changeDelta = topLine - this.oldTopLine,	
+			changeDelta = topLine - this.oldTopLine,
 
-			topPx = this.lineToCtxPx(topLine - this.cTopLine),
-			pxHeight = this.lineToCtxPx(txtLines),
 			isScroll = eve.type === "scroll",
-			data = eve.data || {},
-			regional = false,
-			canvasScroll = false,
-
-			affectedTop = this.cTopLine,
-			affectedBottom = this.cBottomLine;
+			cwScroll = isScroll,			// set this for now
+			data = eve.data || {};
 
 		if (data.pre) {
 			if (!data.pre(eve)) { return; }
+		}
+
+		if (isScroll) {
+			if (bottomLine > this.mmWindow.bottomLine) {
+				this.mmWindow.scrollBottom(bottomLine);
+
+				console.debug("txtLines: ", txtLines);
+				console.debug("topLine: ", topLine);
+				console.debug("new bottom: ", bottomLine);
+
+				cwScroll = true;
+			} else if (topLine < this.mmWindow.topLine) {
+				this.mmWindow.scrollTop(topLine);
+				cwScroll = true;
+			} else {
+				cwScroll = false;
+			}
+		} else {
+			this.reloadText();
+		}
+
+		if (isScroll && !cwScroll) {		// return early if no redraw necessary
+			console.debug("curLine: ", this.curLine());
+			return;
 		}
 
 		if (this.settings.timing) {
 			console.time("redrawing");
 		}
 
-		if (bottomLine > this.cBottomLine) {
-			console.log("overbottom");
-			canvasScroll = true;
-		} else if (topLine < this.cTopLine) {
-			canvasScroll = true;
-		} else if (isScroll) {
-			affectedTop = Math.round(Math.min(topLine, this.oldTopLine));
-			affectedBottom = Math.round(Math.max(bottomLine, this.oldBottomLine));
-			regional = true;
+		if (cwScroll) {
+			console.debug('cwScroll');
+			// this.mmWindow.scrollLines(changeDelta);
+			// this.mmWindow.scrollTop(changeDelta);
+			this.mmWindow.redrawAll();
+		} else {
+			console.debug('redrawing all');
+			// this.mmWindow.scrollLines(0);
+			this.mmWindow.redrawAll();
 		}
-
-		if (canvasScroll) {
-			topPx += this.lineToCtxPx(-changeDelta);
-			this.cTopLine = affectedTop = affectedTop + changeDelta;
-			this.cBottomLine = affectedBottom = affectedBottom + changeDelta;
-
-			console.debug("changeDelta is: " + changeDelta);
-			console.debug("affectedTop: ", affectedTop);
-			console.debug("affectedBottom: ", affectedBottom);
-			console.debug("cBottom: ", this.cBottomLine);
-		}
-
-		// need to clear and redraw old space to new space region
-		// this.clear(isScroll && regional, affectedTop, affectedBottom);
-		this.mmWindow.clear();
-
-		if (!isScroll) {
-			this.reloadText();
-		}
-
-		this.mmWindow.redrawAll();
 
 		// draw box only around the new space
 		// this.drawBox(topPx, pxHeight);
-
-		// remember current space as new space
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
 
+		// remember current space as new space
 		if (this.settings.timing) {
 			console.timeEnd("redrawing");
 		}
@@ -304,6 +327,8 @@ $.fn.minimap = function (options) {
 		var inst = new $.minimap($(this), $('#text'),  options);
 		$(this).data('minimap', inst);
 	});
+
+	return $(this);
 };
 
 }(jQuery));
