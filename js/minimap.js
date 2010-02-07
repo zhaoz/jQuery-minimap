@@ -166,23 +166,8 @@ redrawAll: function () {
 },
 
 scrollTop: function (nTopLine, redraw) {
-	var offset = nTopLine - this.topLine,		// negative if scrolling up
-		nBottomLine = this.bottomLine + offset;
-
-	if (nTopLine < 0) {
-		this.topLine = 0;
-		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
-	} else if (nBottomLine > this.lines.length) {
-		this.bottomLine = this.lines.length;
-		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
-	} else {
-		this.topLine = nTopLine;
-		this.bottomLine = Math.min(this.lines.length, this.topLine + this.maxLines);
-	}
-
-	if (redraw) {
-		this.redrawAll();
-	}
+	this.updateView(nTopLine);
+	if (redraw) { this.redrawAll(); }
 },
 
 /**
