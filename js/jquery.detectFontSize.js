@@ -1,3 +1,8 @@
+/**
+ * Detect rendered font size
+ * @description Detect actual rendered font size given size to detect
+ * @author Ziling Zhao <zilingzhao@gmail.com>
+ */
 (function ($) {
 $.detectFontSize = function (tSize, options) {
 	var size = tSize || 1,
