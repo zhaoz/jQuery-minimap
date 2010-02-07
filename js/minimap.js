@@ -3,11 +3,6 @@
  * @author Ziling Zhao <zilingzhao@gmail.com>
  * @requires $.detectFontSize
  *
- * XXX canvas text not redrawing correctly for scroll up
- * XXX clearing doesn't work properly for scroll up
- * XXX scroll down box does not align with bottom if not exact
- * XXX on large scroll offset count looks corrupted
- * TODO need to break up view port idea into better abstract model
  */
 (function ($) {
 
@@ -60,11 +55,28 @@ getContext: function () {
 	return this.ctx;
 },
 
-updateBoxView: function (top, bottom) {
-	this.boxView.topLine = top;
-	this.boxView.heightLine = bottom;
+updateView: function (topLine, height) {
+	var bottomLine = topLine + height;
 
-	this.boxView.heightPx = this.lines2px(bottom);
+	this.boxView.topLine = topLine;
+	this.boxView.heightLine = height;
+
+	this.boxView.heightPx = this.lines2px(height);
+
+	// TODO can this be written cleaner?
+	if (topLine < 0) {
+		this.topLine = 0;
+		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
+	} else if (bottomLine > this.lines.length) {
+		this.bottomLine = this.lines.length;
+		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
+	} else if (topLine < this.topLine) {
+		this.topLine = Math.max(topLine, 0);
+		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
+	} else if (bottomLine > this.bottomLine) {
+		this.bottomLine = Math.min(bottomLine, this.lines.length);
+		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
+	}
 },
 
 _createCanvas: function (cvdiv) {
@@ -265,18 +277,8 @@ $.minimap.prototype = {
 			if (!data.pre(eve)) { return; }
 		}
 
-		this.mmWindow.updateBoxView(topLine, txtLines);
-		if (isScroll) {
-			if (bottomLine > this.mmWindow.bottomLine) {
-				this.mmWindow.scrollBottom(bottomLine);
-				cwScroll = true;
-			} else if (topLine < this.mmWindow.topLine) {
-				this.mmWindow.scrollTop(topLine);
-				cwScroll = true;
-			} else {
-				cwScroll = false;
-			}
-		} else {
+		this.mmWindow.updateView(topLine, txtLines);
+		if (!isScroll) {
 			this.reloadText();
 		}
 
