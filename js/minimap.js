@@ -1,6 +1,7 @@
 /**
  * @description Draw a minimap of text
  * @author Ziling Zhao <zilingzhao@gmail.com>
+ * @requires $.detectFontSize
  *
  * XXX canvas text not redrawing correctly for scroll up
  * XXX clearing doesn't work properly for scroll up
