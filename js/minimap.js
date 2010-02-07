@@ -45,10 +45,24 @@ init: function (container, options) {
 		topPx:		0,
 		heightPx:	0
 	};
+
 },
 
-lines2px: function (line) {
+unbindHandlers: function () {
+	this.canvas.unbind('.minimap');
+	$('body').unbind('.minimap');
+},
+
+line2px: function (line) {
 	return line * this.settings.fontSize;
+},
+
+px2line: function (px) {
+	return px / this .settings.fontSize;
+},
+
+px2surroundLine: function (px) {
+	return this.px2line(px - this.boxView.heightPx);
 },
 
 getContext: function () {
@@ -56,16 +70,21 @@ getContext: function () {
 },
 
 updateView: function (topLine, height) {
+	if (!height) {
+		height = this.boxView.heightLine;
+	} else {
+		this.boxView.heightLine = height;
+	}
+
 	var bottomLine = topLine + height;
 
 	this.boxView.topLine = topLine;
-	this.boxView.heightLine = height;
-
-	this.boxView.heightPx = this.lines2px(height);
+	this.boxView.heightPx = this.line2px(height);
 
 	// TODO can this be written cleaner?
 	if (topLine < 0) {
 		this.topLine = 0;
+		this.boxView.topLine = 0;
 		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
 	} else if (bottomLine > this.lines.length) {
 		this.bottomLine = this.lines.length;
@@ -124,7 +143,7 @@ clear: function (top, bottom) {
 drawBox: function () {
 	 this.ctx.save();
 
-	 this.ctx.translate(0, this.lines2px(this.boxView.topLine - this.topLine));
+	 this.ctx.translate(0, this.line2px(this.boxView.topLine - this.topLine));
 
 	 this.ctx.strokeStyle = "rgb(200,200,200)";
 	 this.ctx.lineWidth = this.settings.lineWidth;
@@ -204,19 +223,43 @@ $.minimap.prototype = {
 		this.oldTopLine = 0;
 		this.oldBottomLine = 0;
 		this.bindHandlers();
+
+		this.dragging = false;
 	},
 
 	bindHandlers: function () {
-		this.redrawProxy = $.proxy(this.redraw, this);
-		this.container.bind('redraw', this.redrawProxy);
-		this.text.live('keyup', {pre: this.changeHandler}, this.redrawProxy)
-				.bind('scroll', this.redrawProxy);
+		var redrawProxy = $.proxy(this.redraw, this);
+		this.container.bind('redraw.minimap', redrawProxy);
+		this.text.live('keyup.minimap', {pre: this.changeHandler}, redrawProxy)
+				.bind('scroll.minimap', redrawProxy);
+
+		var mousehandler = $.proxy(this.mouseHandler, this);
+
+		this.mmWindow.canvas
+			.bind('mousedown.minimap mouseup.minimap', mousehandler);
+		$('body').bind('mousemove.minimap', mousehandler);
+	},
+	
+	recenter: function (px) {
+		var line = this.mmWindow.px2surroundLine(px);
+		this.mmWindow.scrollTop(line, true);
+	},
+	
+	mouseHandler: function (eve) {
+		if (eve.type === 'mousemove' && this.dragging) {
+			this.recenter(eve.pageY);
+		} else if (eve.type === "mouseup") {
+			this.dragging = false;
+		} else if (eve.type === "mousedown") {
+			this.dragging = true;
+			this.recenter(eve.pageY);
+		}
 	},
 
 	unbindHandlers: function () {
-		this.text.die(this.redrawProxy);
-		this.text.unbind(this.redrawProxy);
-		this.container.unbind(this.redrawProxy);
+		this.text.die('.minimap')
+			.unbind('.minimap');
+		this.container.unbind('.minimap');
 	},
 
 	lineToCtxPx: function (line) {
