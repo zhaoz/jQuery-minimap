@@ -156,7 +156,7 @@ drawBox: function () {
 /**
  * @description repaint the entire view window
  */
-redrawAll: function () {
+redraw: function () {
 	this.clear();
 
 	this.ctx.save();
@@ -186,7 +186,7 @@ redrawAll: function () {
 
 scrollTop: function (nTopLine, redraw) {
 	this.updateView(nTopLine);
-	if (redraw) { this.redrawAll(); }
+	if (redraw) { this.redraw(); }
 },
 
 /**
@@ -314,7 +314,7 @@ $.minimap.prototype = {
 			console.time("redrawing");
 		}
 
-		this.mmWindow.redrawAll();
+		this.mmWindow.redraw();
 
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
