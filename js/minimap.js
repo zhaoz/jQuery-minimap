@@ -17,29 +17,32 @@ $.minimap.defaults = {
 	fontSize: 4				// font size of text in canvas
 };
 
-$.minimap.prototype = {
-	init: function (container, textArea, options) {
-		this.settings = $.extend({}, $.minimap.defaults, options);
+$.minimap.CanvasView = function () { this.init.apply(this, arguments); };
 
+$.minimap.CanvasView.prototype = {
+	init: function (container, options) {
+		this.settings = $.extend({
+				fontSize: 4		// size of font to render in canvas
+			}, options);
 		this.container = container;
-		this.text = textArea;
 
-		// detect what actual font pixels are in textArea
-		this.fontHeight = $.detectFontSize(
-				parseInt(this.text.css('font-size'), 10));
+		this.lines = [];		// the lines of text to draw
 
+		this.viewAbleLines = 0;	// how many lines can we see in the canvas?
+		this.topLine = 0;		// what line num is at the top (viewable)
+		this.bottomLine = 0;	// what line is at the bottom (viewable)
+
+		// construct the canvas and get the context
 		this.canvas = this._createCanvas(container);
 		this.ctx = this.canvas.get(0).getContext("2d");
 		this.ctx.font = this.settings.fontSize + "px monospace";
 
-		this.height = this.canvas.attr('height');
-		this.width = this.canvas.attr('width');
+		// canvas height and width in px, aka view window size
+		this.vwHeight = this.canvas.attr('height');
+		this.vwWidth = this.canvas.attr('width');
 
-		this.cTopLine = 0;
-		this.cBottomLine = this.height / this.settings.fontSize;
-		console.debug("cBottom: ", this.cBottomLine);
-
-		this.bindHandlers();
+		// total lines that the canvas can show
+		this.maxLines = this.vwHeight / this.settings.fontSize;
 	},
 
 	_createCanvas: function (cvdiv) {
@@ -50,6 +53,93 @@ $.minimap.prototype = {
 		return $(['<canvas id="view" width="', width,
 				'px" height="', height, 'px"></canvas>'].join(""))
 			.appendTo(cvdiv);
+	},
+
+	getContext: function () {
+		return this.ctx;
+	},
+	
+	/**
+	 * @description update the lines of text
+	 * @param text
+	 */
+	updateText: function (text) {
+		this.lines = text.replace(/\t/g, "    ").split("\n");
+
+		// need to update bottomLine
+		var possibleBtm = this.lines.length - this.topLine,
+			maxBtm = this.topLine + this.maxLines;
+		this.bottomLine = Math.min(possibleBtm, maxBtm);
+	},
+	
+	clear: function (regional, top, bottom) {
+		var ctx = this.ctx,
+			y = 0,
+			h = this.vwHeight;
+
+		ctx.save();
+
+
+		if (regional) {
+			// only clear from top line to bottom line
+			y = this.lineToCtxPx(top - 1);
+			h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
+		}
+
+		// ctx.clearRect(0, y, this.vwWidth, h);	// is this necessary?
+		ctx.fillStyle = "rgb(100, 100, 100)";
+		ctx.fillRect(0, y, this.vwWidth, h);
+
+
+		ctx.restore();
+	},
+	
+	/**
+	 * @description repaint the entire view window
+	 */
+	redrawAll: function () {
+		this.ctx.save();
+		this.ctx.fillStyle = "rgb(255, 255, 255)";
+
+		var curLine = this.topLine,
+			fontSize = this.settings.fontSize,
+			off = (1 - curLine - parseInt(curLine, 10)) * fontSize,
+			btm = this.bottomLine,
+			line = "";
+
+		for (curLine; curLine < btm; curLine++) {
+			line = this.lines[curLine];
+			this.ctx.fillText(line, 0, off, this.vwWidth);
+			if (off > this.vwHeight + fontSize) {
+				break;			// no need to draw stuff out of view window
+			}
+			off += fontSize;
+		}
+
+		this.ctx.restore();
+	}
+};
+
+$.minimap.prototype = {
+	init: function (container, textArea, options) {
+		this.settings = $.extend({}, $.minimap.defaults, options);
+
+		this.container = container;
+
+		// this is the actual canvas
+		this.mmWindow = new $.minimap.CanvasView(this.container);
+		this.text = textArea;
+
+		// detect what actual font pixels are in textArea
+		this.fontHeight = $.detectFontSize(
+				parseInt(this.text.css('font-size'), 10));
+
+		/*
+		this.cTopLine = 0;
+		this.cBottomLine = this.height / this.settings.fontSize;
+		console.debug("cBottom: ", this.cBottomLine);
+		*/
+		this.bindHandlers();
 	},
 
 	bindHandlers: function () {
@@ -73,31 +163,12 @@ $.minimap.prototype = {
 		return px * this.settings.fontSize / this.fontHeight;
 	},
 
-	clear: function(regional, top, bottom) {
-		var ctx = this.ctx,
-			y = 0,
-			h = this.height;
-
-		ctx.save();
-
-		if (regional) {
-			// only clear from top line to bottom line
-			y = this.lineToCtxPx(top - 1);
-			h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
-		}
-
-		ctx.clearRect(0, y, this.width, h);
-		ctx.fillStyle = "rgb(100, 100, 100)";
-		ctx.fillRect(0, y, this.width, h);
-
-		ctx.restore();
-	},
-	
 	reloadText: function () {
-		this.lines = this.text.val().replace(/\t/g, "    ").split("\n");
+		this.mmWindow.updateText(this.text.val());
 	},
 
 	drawText: function drawText(regional, top, bottom) {
+		// if (window.opera) { return; }
 		this.ctx.save();
 
 		this.ctx.fillStyle = "rgb(255, 255, 255)";
@@ -107,6 +178,8 @@ $.minimap.prototype = {
 			off = regional ? ii * fontSize : 0;
 			len = bottom,
 			line = "";
+
+		var first = 0;
 
 		for (ii; ii < len; ii++) {
 			off += fontSize;
@@ -181,6 +254,7 @@ $.minimap.prototype = {
 		}
 
 		if (bottomLine > this.cBottomLine) {
+			console.log("overbottom");
 			canvasScroll = true;
 		} else if (topLine < this.cTopLine) {
 			canvasScroll = true;
@@ -194,18 +268,25 @@ $.minimap.prototype = {
 			topPx += this.lineToCtxPx(-changeDelta);
 			this.cTopLine = affectedTop = affectedTop + changeDelta;
 			this.cBottomLine = affectedBottom = affectedBottom + changeDelta;
+
+			console.debug("changeDelta is: " + changeDelta);
+			console.debug("affectedTop: ", affectedTop);
+			console.debug("affectedBottom: ", affectedBottom);
+			console.debug("cBottom: ", this.cBottomLine);
 		}
 
 		// need to clear and redraw old space to new space region
-		this.clear(isScroll && regional, affectedTop, affectedBottom);
+		// this.clear(isScroll && regional, affectedTop, affectedBottom);
+		this.mmWindow.clear();
 
 		if (!isScroll) {
 			this.reloadText();
 		}
-		this.drawText(regional, affectedTop, affectedBottom);
+
+		this.mmWindow.redrawAll();
 
 		// draw box only around the new space
-		this.drawBox(topPx, pxHeight);
+		// this.drawBox(topPx, pxHeight);
 
 		// remember current space as new space
 		this.oldTopLine = topLine;
