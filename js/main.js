@@ -28,7 +28,7 @@ $.detectFontSize = function (tSize, options) {
 
 if (!window.opera) {
 	// opera doesn't have fillText
-	$('#canvasDiv').minimap({ debug: true, timing: false });
+	$('#canvasDiv').minimap({ debug: true, timing: true });
 }
 
 // load jquery into textarea
