@@ -43,6 +43,28 @@ init: function (container, options) {
 
 	// total lines that the canvas can show
 	this.maxLines = this.vwHeight / this.settings.fontSize;
+
+	this.boxView = {
+		topLine:	0,
+		heightLine:	0,
+		topPx:		0,
+		heightPx:	0
+	};
+},
+
+lines2px: function (line) {
+	return line * this.settings.fontSize;
+},
+
+getContext: function () {
+	return this.ctx;
+},
+
+updateBoxView: function (top, bottom) {
+	this.boxView.topLine = top;
+	this.boxView.heightLine = bottom;
+
+	this.boxView.heightPx = this.lines2px(bottom);
 },
 
 _createCanvas: function (cvdiv) {
@@ -53,10 +75,6 @@ _createCanvas: function (cvdiv) {
 	return $(['<canvas id="view" width="', width,
 			'px" height="', height, 'px"></canvas>'].join(""))
 		.appendTo(cvdiv);
-},
-
-getContext: function () {
-	return this.ctx;
 },
 
 /**
@@ -91,6 +109,19 @@ clear: function (top, bottom) {
 	ctx.restore();
 },
 
+drawBox: function () {
+	 this.ctx.save();
+
+	 this.ctx.translate(0, this.lines2px(this.boxView.topLine - this.topLine));
+
+	 this.ctx.strokeStyle = "rgb(200,200,200)";
+	 this.ctx.lineWidth = this.settings.lineWidth;
+	 this.ctx.fillStyle = "white";
+	 this.ctx.strokeRect(0, 0, this.vwWidth, this.boxView.heightPx);
+
+	 this.ctx.restore();
+},
+
 /**
  * @description repaint the entire view window
  */
@@ -109,23 +140,17 @@ redrawAll: function () {
 	for (curLine; curLine < btm; curLine++) {
 		line = this.lines[curLine];
 		this.ctx.fillText(line, 0, off, this.vwWidth);
+
 		if (off > this.vwHeight + fontSize) {
 			break;			// no need to draw stuff out of view window
 		}
+
 		off += fontSize;
 	}
 
-	this.ctx.restore();
-},
+	this.drawBox();
 
-/**
- * scroll view window x lines
- * @description scrolldown some num of lines, negative is up, this scroll
- *   scrolls entire view window
- * @param nLines, some number of lines scrolled
- */
-scrollLines: function (nLines, redraw) {
-	this.scrollTop(this.topLine + nLine, redraw);
+	this.ctx.restore();
 },
 
 scrollTop: function (nTopLine, redraw) {
@@ -148,6 +173,16 @@ scrollTop: function (nTopLine, redraw) {
 	}
 },
 
+/**
+ * scroll view window x lines
+ * @description scrolldown some num of lines, negative is up, this scroll
+ *   scrolls entire view window
+ * @param nLines, some number of lines scrolled
+ */
+scrollLines: function (nLines, redraw) {
+	this.scrollTop(this.topLine + nLine, redraw);
+},
+
 scrollBottom: function (nBottomLine, redraw) {
 	this.scrollTop(nBottomLine - this.maxLines, redraw);
 }
@@ -160,7 +195,7 @@ $.minimap.prototype = {
 		this.container = container;
 
 		// this is the actual canvas
-		this.mmWindow = new $.minimap.CanvasView(this.container);
+		this.mmWindow = new $.minimap.CanvasView(this.container, this.settings);
 		this.text = textArea
 			.attr('wrap', 'off')
 			.css('overflow-x', 'scroll');
@@ -207,17 +242,6 @@ $.minimap.prototype = {
 		return this.text.get(0).clientHeight / this.fontHeight;
 	},
 
-	drawBox: function drawBox(top, bottom) {
-		this.ctx.save();
-
-		this.ctx.strokeStyle = "rgb(200,200,200)";
-		this.ctx.lineWidth = this.settings.lineWidth;
-		this.ctx.fillStyle = "white";
-		this.ctx.strokeRect(0, top, this.width, bottom);
-
-		this.ctx.restore();
-	},
-
 	changeHandler: function (eve) {
 		var key = eve.which;
 		if (key <= 40 && key >= 33) {
@@ -233,9 +257,6 @@ $.minimap.prototype = {
 			topLine = this.curLine(),
 			bottomLine = txtLines + topLine,
 
-			// num lines scrolled down (negative for up)
-			changeDelta = topLine - this.oldTopLine,
-
 			isScroll = eve.type === "scroll",
 			cwScroll = isScroll,			// set this for now
 			data = eve.data || {};
@@ -244,10 +265,10 @@ $.minimap.prototype = {
 			if (!data.pre(eve)) { return; }
 		}
 
+		this.mmWindow.updateBoxView(topLine, txtLines);
 		if (isScroll) {
 			if (bottomLine > this.mmWindow.bottomLine) {
 				this.mmWindow.scrollBottom(bottomLine);
-
 				cwScroll = true;
 			} else if (topLine < this.mmWindow.topLine) {
 				this.mmWindow.scrollTop(topLine);
@@ -259,22 +280,12 @@ $.minimap.prototype = {
 			this.reloadText();
 		}
 
-		if (isScroll && !cwScroll) {		// return early if no redraw necessary
-			return;
-		}
-
 		if (this.settings.timing) {
 			console.time("redrawing");
 		}
 
-		if (cwScroll) {
-			this.mmWindow.redrawAll();
-		} else {
-			this.mmWindow.redrawAll();
-		}
+		this.mmWindow.redrawAll();
 
-		// draw box only around the new space
-		// this.drawBox(topPx, pxHeight);
 		this.oldTopLine = topLine;
 		this.oldBottomLine = bottomLine;
 
