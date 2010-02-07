@@ -62,29 +62,21 @@ px2line: function (px) {
 },
 
 px2surroundLine: function (px) {
-	return this.px2line(px - this.boxView.heightPx);
+	console.debug(px);
+	console.debug(this.boxView.topPx);
+	console.debug(this.boxView.heightPx);
+	// return this.px2line(this.boxView.topPx + px - this.boxView.heightPx);
+	return this.px2line(px - ( this.boxView.heightPx / 2 ));
 },
 
 getContext: function () {
 	return this.ctx;
 },
 
-updateView: function (topLine, height) {
-	if (!height) {
-		height = this.boxView.heightLine;
-	} else {
-		this.boxView.heightLine = height;
-	}
-
-	var bottomLine = topLine + height;
-
-	this.boxView.topLine = topLine;
-	this.boxView.heightPx = this.line2px(height);
-
+updateView: function (topLine, bottomLine) {
 	// TODO can this be written cleaner?
 	if (topLine < 0) {
 		this.topLine = 0;
-		this.boxView.topLine = 0;
 		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
 	} else if (bottomLine > this.lines.length) {
 		this.bottomLine = this.lines.length;
@@ -96,6 +88,26 @@ updateView: function (topLine, height) {
 		this.bottomLine = Math.min(bottomLine, this.lines.length);
 		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
 	}
+},
+
+updateViewBox: function (topLine, height) {
+	if (!height) {
+		height = this.boxView.heightLine;
+	} else {
+		this.boxView.heightLine = height;
+	}
+
+	var bottomLine = topLine + height;
+
+	this.boxView.topLine = topLine;
+	this.boxView.topPx = this.line2px(topLine);
+	this.boxView.heightPx = this.line2px(height);
+
+	if (topLine < 0) {
+		this.boxView.topLine = 0;
+	}
+
+	this.updateView(topLine, bottomLine);
 },
 
 _createCanvas: function (cvdiv) {
@@ -185,7 +197,7 @@ redraw: function () {
 },
 
 scrollTop: function (nTopLine, redraw) {
-	this.updateView(nTopLine);
+	this.updateViewBox(nTopLine);
 	if (redraw) { this.redraw(); }
 },
 
@@ -241,8 +253,10 @@ $.minimap.prototype = {
 	},
 	
 	recenter: function (px) {
-		var line = this.mmWindow.px2surroundLine(px);
+		var line = this.mmWindow.px2surroundLine(px - this.mmWindow.canvas.get(0).offsetTop);
 		this.mmWindow.scrollTop(line, true);
+
+		this.text.scrollTop(this.line2CPx(this.mmWindow.boxView.topLine));
 	},
 	
 	mouseHandler: function (eve) {
@@ -262,8 +276,8 @@ $.minimap.prototype = {
 		this.container.unbind('.minimap');
 	},
 
-	lineToCtxPx: function (line) {
-		return line * this.settings.fontSize;
+	line2CPx: function (line) {
+		return line * this.fontHeight;
 	},
 	
 	reloadText: function () {
@@ -301,11 +315,14 @@ $.minimap.prototype = {
 			cwScroll = isScroll,			// set this for now
 			data = eve.data || {};
 
+		/* if triggered while dragging, canvas draw already handled */
+		if (this.dragging) { return; }
+
 		if (data.pre) {
 			if (!data.pre(eve)) { return; }
 		}
 
-		this.mmWindow.updateView(topLine, txtLines);
+		this.mmWindow.updateViewBox(topLine, txtLines);
 		if (!isScroll) {
 			this.reloadText();
 		}
