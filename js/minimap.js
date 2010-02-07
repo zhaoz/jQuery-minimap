@@ -72,24 +72,21 @@ updateText: function (text) {
 	this.bottomLine = Math.min(possibleBtm, maxBtm);
 },
 
-clear: function (regional, top, bottom) {
+/**
+ * Clear canvas
+ * @description clear whole or region of the canvas
+ * @param top the line to start clearing from
+ * @param bottom the line to stop clearing at
+ */
+clear: function (top, bottom) {
 	var ctx = this.ctx,
-		y = 0,
-		h = this.vwHeight;
+		y = top || 0,
+		h = bottom ? bottom - top : this.vwHeight;
 
 	ctx.save();
 
-
-	if (regional) {
-		// only clear from top line to bottom line
-		y = this.lineToCtxPx(top - 1);
-		h = this.lineToCtxPx(bottom) - y + this.settings.lineWidth;
-	}
-
-	// ctx.clearRect(0, y, this.vwWidth, h);	// is this necessary?
 	ctx.fillStyle = "rgb(100, 100, 100)";
 	ctx.fillRect(0, y, this.vwWidth, h);
-
 
 	ctx.restore();
 },
