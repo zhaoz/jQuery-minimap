@@ -62,11 +62,7 @@ px2line: function (px) {
 },
 
 px2surroundLine: function (px) {
-	console.debug(px);
-	console.debug(this.boxView.topPx);
-	console.debug(this.boxView.heightPx);
-	// return this.px2line(this.boxView.topPx + px - this.boxView.heightPx);
-	return this.px2line(px - ( this.boxView.heightPx / 2 ));
+	return this.topLine + this.px2line(px - ( this.boxView.heightPx / 2 ));
 },
 
 getContext: function () {
@@ -197,7 +193,7 @@ redraw: function () {
 },
 
 scrollTop: function (nTopLine, redraw) {
-	this.updateViewBox(nTopLine);
+	this.updateView(nTopLine);
 	if (redraw) { this.redraw(); }
 },
 
@@ -254,9 +250,11 @@ $.minimap.prototype = {
 	
 	recenter: function (px) {
 		var line = this.mmWindow.px2surroundLine(px - this.mmWindow.canvas.get(0).offsetTop);
-		this.mmWindow.scrollTop(line, true);
+		this.mmWindow.updateViewBox(line, true);
 
 		this.text.scrollTop(this.line2CPx(this.mmWindow.boxView.topLine));
+
+		this.redraw();
 	},
 	
 	mouseHandler: function (eve) {
@@ -311,12 +309,11 @@ $.minimap.prototype = {
 			topLine = this.curLine(),
 			bottomLine = txtLines + topLine,
 
-			isScroll = eve.type === "scroll",
-			cwScroll = isScroll,			// set this for now
-			data = eve.data || {};
+			isScroll = eve && eve.type === "scroll",
+			data = eve && eve.data || {};
 
 		/* if triggered while dragging, canvas draw already handled */
-		if (this.dragging) { return; }
+		if (eve && this.dragging) { return; }
 
 		if (data.pre) {
 			if (!data.pre(eve)) { return; }
