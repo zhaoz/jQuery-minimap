@@ -109,8 +109,6 @@ redrawAll: function () {
 		btm = this.bottomLine,
 		line = "";
 
-	console.debug("drawing with starting offset: ", off);
-
 	for (curLine; curLine < btm; curLine++) {
 		line = this.lines[curLine];
 		this.ctx.fillText(line, 0, off, this.vwWidth);
@@ -134,14 +132,8 @@ scrollLines: function (nLines, redraw) {
 },
 
 scrollTop: function (nTopLine, redraw) {
-	var offset = this.topLine - nTopLine,		// negative if scrolling up
+	var offset = nTopLine - this.topLine,		// negative if scrolling up
 		nBottomLine = this.bottomLine + offset;
-
-	/*
-	console.debug("given nTopLine: " + nTopLine);
-	console.debug("topLine: ", this.topLine);
-	console.debug("bottomLine: ", this.bottomLine);
-	*/
 
 	if (nTopLine < 0) {
 		this.topLine = 0;
@@ -154,24 +146,13 @@ scrollTop: function (nTopLine, redraw) {
 		this.bottomLine = Math.min(this.lines.length, this.topLine + this.maxLines);
 	}
 
-	/*
-	console.debug("after topLine: ", this.topLine);
-	console.debug("after bottomLine: ", this.bottomLine);
-	*/
-
 	if (redraw) {
 		this.redrawAll();
 	}
 },
 
 scrollBottom: function (nBottomLine, redraw) {
-	var offset = nBottomLine - this.bottomLine,		// negative if scrolling up
-		nTopLine = nBottomLine - this.maxLines;
-
-	console.debug("nBottomLine: ", nBottomLine);
-	// console.debug("offset: " , offset);
-
-	this.scrollTop(nTopLine, redraw);
+	this.scrollTop(nBottomLine - this.maxLines, redraw);
 }
 };
 
@@ -274,10 +255,6 @@ $.minimap.prototype = {
 			if (bottomLine > this.mmWindow.bottomLine) {
 				this.mmWindow.scrollBottom(bottomLine);
 
-				console.debug("txtLines: ", txtLines);
-				console.debug("topLine: ", topLine);
-				console.debug("new bottom: ", bottomLine);
-
 				cwScroll = true;
 			} else if (topLine < this.mmWindow.topLine) {
 				this.mmWindow.scrollTop(topLine);
@@ -290,7 +267,6 @@ $.minimap.prototype = {
 		}
 
 		if (isScroll && !cwScroll) {		// return early if no redraw necessary
-			console.debug("curLine: ", this.curLine());
 			return;
 		}
 
@@ -299,13 +275,8 @@ $.minimap.prototype = {
 		}
 
 		if (cwScroll) {
-			console.debug('cwScroll');
-			// this.mmWindow.scrollLines(changeDelta);
-			// this.mmWindow.scrollTop(changeDelta);
 			this.mmWindow.redrawAll();
 		} else {
-			console.debug('redrawing all');
-			// this.mmWindow.scrollLines(0);
 			this.mmWindow.redrawAll();
 		}
 
