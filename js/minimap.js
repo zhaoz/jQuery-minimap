@@ -10,16 +10,6 @@
  */
 (function ($) {
 
-function createCanvas(cvdiv) {
-	var width = 200,
-		bodyHeight = $('body').innerHeight(),
-		height = bodyHeight - cvdiv.position().top;
-
-	return $(['<canvas id="view" width="', width,
-			'px" height="', height, 'px"></canvas>'].join(""))
-		.appendTo(cvdiv);
-}
-
 $.minimap = function () { this.init.apply(this, arguments); };
 $.minimap.defaults = {
 	lineWidth: 1,			// width in px for the box
@@ -37,7 +27,7 @@ $.minimap.prototype = {
 		this.fontHeight = $.detectFontSize(
 				parseInt(this.text.css('font-size'), 10));
 
-		this.canvas = createCanvas(container);
+		this.canvas = this._createCanvas(container);
 		this.ctx = this.canvas.get(0).getContext("2d");
 		this.ctx.font = this.settings.fontSize + "px monospace";
 
@@ -46,8 +36,19 @@ $.minimap.prototype = {
 
 		this.cTopLine = 0;
 		this.cBottomLine = this.height / this.settings.fontSize;
+		console.debug("cBottom: ", this.cBottomLine);
 
 		this.bindHandlers();
+	},
+
+	_createCanvas: function (cvdiv) {
+		var width = 200,
+			bodyHeight = $('body').innerHeight(),
+			height = bodyHeight - cvdiv.position().top;
+
+		return $(['<canvas id="view" width="', width,
+				'px" height="', height, 'px"></canvas>'].join(""))
+			.appendTo(cvdiv);
 	},
 
 	bindHandlers: function () {
