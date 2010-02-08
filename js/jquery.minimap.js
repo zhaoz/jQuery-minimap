@@ -359,10 +359,10 @@ $.minimap.prototype = {
 	}
 };
 
-$.fn.minimap = function (options) {
+$.fn.minimap = function (text, options) {
 
 	$(this).each(function () {
-		var inst = new $.minimap($(this), $('#text'),  options);
+		var inst = new $.minimap($(this), text,  options);
 		$(this).data('minimap', inst);
 	});
 
