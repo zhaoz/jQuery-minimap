@@ -10,7 +10,7 @@ if (!window.console) {
 if (!window.opera) {
 	// opera doesn't have fillText
 	mm = $('#canvasDiv')
-		.minimap({ debug: true, timing: true })
+		.minimap({ debug: false, timing: false })
 		.data('minimap');
 }
 
