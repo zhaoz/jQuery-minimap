@@ -260,9 +260,8 @@ $.minimap.prototype = {
 		$('body').unbind('.minimap');
 	},
 
-
-	recenter: function (px) {
-		var line = this.mmWindow.px2surroundLine(px - this.mmWindow.canvas.get(0).offsetTop);
+	recenter: function (y) {
+		var line = this.mmWindow.px2surroundLine(y - this.mmWindow.canvas.get(0).offsetTop);
 		this.mmWindow.updateViewBox(line, true);
 
 		this.text.scrollTop(this.line2CPx(this.mmWindow.boxView.topLine));
@@ -273,18 +272,24 @@ $.minimap.prototype = {
 	mouseHandler: function (eve) {
 		var type = eve.type;
 
+		clearInterval(this.recenterInterval);
 		if (eve.data && eve.data.stopDrag) {
 			this.dragging = false;
 			return;
 		}
 
+		var rerecenter = $.proxy(function () {
+				this.recenter(eve.pageY);
+			}, this);
+
 		if (type === 'mousemove' && this.dragging) {
 			this.recenter(eve.pageY);
+			this.recenterInterval = setInterval(rerecenter, 0);
 		} else if (type === "mouseup") {
 			this.dragging = false;
 		} else if (type === "mousedown") {
 			this.dragging = true;
-			this.recenter(eve.pageY);
+			this.recenterInterval = setInterval(rerecenter, 0);
 		}
 	},
 
