@@ -2,6 +2,24 @@ body {
 	background-color: rgb(120, 120, 120);
 }
 
+a {
+	text-decoration: none;
+	color: white;
+	font-weight: bold;
+}
+
+#header { }
+
+#header h1 {
+	float: left;
+	padding: 0px;
+	margin: 0px;
+}
+
+#info {
+	float: right;
+}
+
 #canvasDiv {
 	float: left;
 }
