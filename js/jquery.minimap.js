@@ -244,8 +244,11 @@ $.minimap.prototype = {
 		var mousehandler = $.proxy(this.mouseHandler, this);
 
 		this.mmWindow.canvas
-			.bind('mousedown.minimap mouseup.minimap', mousehandler)
+			.bind('mousedown.minimap', mousehandler)
 			.bind('mousemove.minimap', mousehandler);
+
+		$('body')
+			.bind('mouseup.minimap mouseenter.minimap', {stopDrag: true}, mousehandler);
 	},
 
 	recenter: function (px) {
@@ -258,11 +261,18 @@ $.minimap.prototype = {
 	},
 
 	mouseHandler: function (eve) {
-		if (eve.type === 'mousemove' && this.dragging) {
-			this.recenter(eve.pageY);
-		} else if (eve.type === "mouseup") {
+		var type = eve.type;
+
+		if (eve.data && eve.data.stopDrag) {
 			this.dragging = false;
-		} else if (eve.type === "mousedown") {
+			return;
+		}
+
+		if (type === 'mousemove' && this.dragging) {
+			this.recenter(eve.pageY);
+		} else if (type === "mouseup" || type === "mouseleave") {
+			this.dragging = false;
+		} else if (type === "mousedown") {
 			this.dragging = true;
 			this.recenter(eve.pageY);
 		}
