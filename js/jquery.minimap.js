@@ -247,7 +247,7 @@ $.minimap.prototype = {
 			.bind('mousedown.minimap mouseup.minimap', mousehandler)
 			.bind('mousemove.minimap', mousehandler);
 	},
-	
+
 	recenter: function (px) {
 		var line = this.mmWindow.px2surroundLine(px - this.mmWindow.canvas.get(0).offsetTop);
 		this.mmWindow.updateViewBox(line, true);
@@ -256,7 +256,7 @@ $.minimap.prototype = {
 
 		this.redraw();
 	},
-	
+
 	mouseHandler: function (eve) {
 		if (eve.type === 'mousemove' && this.dragging) {
 			this.recenter(eve.pageY);
@@ -277,7 +277,7 @@ $.minimap.prototype = {
 	line2CPx: function (line) {
 		return line * this.fontHeight;
 	},
-	
+
 	reloadText: function () {
 		this.mmWindow.updateText(this.text.val());
 	},
@@ -287,7 +287,7 @@ $.minimap.prototype = {
 	},
 
 	/**
-	 * Determine the number of lines being shown in the textarea, this may 
+	 * Determine the number of lines being shown in the textarea, this may
 	 * not return an integer.
 	 */
 	linesInTextArea: function linesInTextArea() {
