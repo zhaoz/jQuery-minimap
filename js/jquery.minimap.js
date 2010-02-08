@@ -251,6 +251,16 @@ $.minimap.prototype = {
 			.bind('mouseup.minimap mouseenter.minimap', {stopDrag: true}, mousehandler);
 	},
 
+	unbindHandlers: function () {
+		this.text.die('.minimap')
+			.unbind('.minimap');
+		this.container.unbind('.minimap');
+
+		this.mmWindow.canvas.unbind('.minimap');
+		$('body').unbind('.minimap');
+	},
+
+
 	recenter: function (px) {
 		var line = this.mmWindow.px2surroundLine(px - this.mmWindow.canvas.get(0).offsetTop);
 		this.mmWindow.updateViewBox(line, true);
@@ -276,12 +286,6 @@ $.minimap.prototype = {
 			this.dragging = true;
 			this.recenter(eve.pageY);
 		}
-	},
-
-	unbindHandlers: function () {
-		this.text.die('.minimap')
-			.unbind('.minimap');
-		this.container.unbind('.minimap');
 	},
 
 	line2CPx: function (line) {
