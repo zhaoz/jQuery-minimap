@@ -280,7 +280,7 @@ $.minimap.prototype = {
 
 		if (type === 'mousemove' && this.dragging) {
 			this.recenter(eve.pageY);
-		} else if (type === "mouseup" || type === "mouseleave") {
+		} else if (type === "mouseup") {
 			this.dragging = false;
 		} else if (type === "mousedown") {
 			this.dragging = true;
