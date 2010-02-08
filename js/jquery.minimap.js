@@ -69,6 +69,10 @@ getContext: function () {
 	return this.ctx;
 },
 
+/**
+ * @param topLine is top line of textarea viwe
+ * @param bottomLIne is bottom line of textarea viwe
+ */
 updateView: function (topLine, bottomLine) {
 	// TODO can this be written cleaner?
 	if (topLine < 0) {
@@ -79,7 +83,7 @@ updateView: function (topLine, bottomLine) {
 		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
 	} else if (topLine < this.topLine) {
 		this.topLine = Math.max(topLine, 0);
-		this.bottomline = Math.min(this.lines.length, this.topLine + this.maxLines);
+		this.bottomLine = Math.min(this.lines.length, this.topLine + this.maxLines);
 	} else if (bottomLine > this.bottomLine) {
 		this.bottomLine = Math.min(bottomLine, this.lines.length);
 		this.topLine = Math.max(0, this.bottomLine - this.maxLines);
