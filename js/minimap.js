@@ -244,8 +244,8 @@ $.minimap.prototype = {
 		var mousehandler = $.proxy(this.mouseHandler, this);
 
 		this.mmWindow.canvas
-			.bind('mousedown.minimap mouseup.minimap', mousehandler);
-		$('body').bind('mousemove.minimap', mousehandler);
+			.bind('mousedown.minimap mouseup.minimap', mousehandler)
+			.bind('mousemove.minimap', mousehandler);
 	},
 	
 	recenter: function (px) {
