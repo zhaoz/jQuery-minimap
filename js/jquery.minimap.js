@@ -241,18 +241,22 @@ $.minimap.prototype = {
 
 	bindHandlers: function () {
 		var redrawProxy = $.proxy(this.redraw, this);
-		this.container.bind('redraw.minimap', redrawProxy);
-		this.text.live('keyup.minimap', {pre: this.changeHandler}, redrawProxy)
-				.bind('scroll.minimap', redrawProxy);
-
 		var mousehandler = $.proxy(this.mouseHandler, this);
+    var that = this;
 
-		this.mmWindow.canvas
-			.bind('mousedown.minimap', mousehandler)
-			.bind('mousemove.minimap', mousehandler);
+    $(document).ready(function () {
+		  that.container.bind('redraw.minimap', redrawProxy);
 
-		$('body')
-			.bind('mouseup.minimap mouseenter.minimap', {stopDrag: true}, mousehandler);
+      that.text.bind('keyup.minimap', {pre: that.changeHandler}, redrawProxy)
+          .bind('scroll.minimap', redrawProxy);
+
+      that.mmWindow.canvas
+        .bind('mousedown.minimap', mousehandler)
+        .bind('mousemove.minimap', mousehandler);
+
+      $('body')
+        .bind('mouseup.minimap mouseenter.minimap', {stopDrag: true}, mousehandler);
+    });
 	},
 
 	unbindHandlers: function () {
@@ -332,7 +336,7 @@ $.minimap.prototype = {
 			topLine = this.curLine(),
 			bottomLine = txtLines + topLine,
 
-			isScroll = eve && eve.type === "scroll",
+			isScroll = !eve || eve.type === "scroll",
 			data = eve && eve.data || {};
 
 		/* if triggered while dragging, canvas draw already handled */
